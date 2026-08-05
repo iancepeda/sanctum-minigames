@@ -16,6 +16,7 @@ just one HTML file.
 - 🌗 Progress ring + counter showing `n / 8`
 - 🌐 Language switch: **Spanish / English**, no page reload
 - 📱 Responsive layout — works on phone, tablet, and desktop
+- 🔗 Footer with copyright, a link to this repo, and a Discord contact link for bug reports/ideas
 - ⚡ Pure HTML/CSS/JS, no frameworks, no build tools, no external JS libraries
 
 ## Demo
