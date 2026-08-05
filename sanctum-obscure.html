@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanctum // Minijuegos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --void:#0a0713;
+  --void-deep:#050308;
+  --stone-1:#170f22;
+  --stone-2:#241830;
+  --stone-3:#33223f;
+  --hairline:rgba(198,163,230,0.12);
+  --hairline-strong:rgba(198,163,230,0.22);
+  --pink:#ff4fd4;
+  --pink-bright:#ffb0ee;
+  --pink-dim:#7a2a6b;
+  --purple:#8a4fe0;
+  --purple-dim:#3d2266;
+  --text-hi:#f1e7fa;
+  --text-mid:#b6a3c9;
+  --text-low:#6d5c82;
+  --danger:#ff3e5e;
+  --gold:#e8b95c;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(122,42,107,0.35), transparent 60%),
+    radial-gradient(ellipse 700px 600px at 110% 30%, rgba(80,40,140,0.30), transparent 55%),
+    radial-gradient(ellipse 800px 700px at 50% 120%, rgba(60,20,80,0.25), transparent 55%),
+    var(--void-deep);
+  min-height:100vh;
+  font-family:'Inter', sans-serif;
+  color:var(--text-hi);
+}
+
+.app{
+  display:flex;
+  min-height:100vh;
+  max-width:1180px;
+  margin:0 auto;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{
+  width:250px;
+  flex-shrink:0;
+  background:linear-gradient(180deg, var(--stone-1), var(--void-deep));
+  border-right:1px solid var(--hairline);
+  padding:28px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+}
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding-bottom:20px;
+  border-bottom:1px solid var(--hairline);
+}
+.brand .mark{
+  font-family:'Cinzel Decorative', serif;
+  font-size:22px;
+  letter-spacing:2px;
+  background:linear-gradient(135deg, var(--pink-bright), var(--purple));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.brand .sub{
+  font-size:11px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--text-low);
+}
+
+.nav-label{
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text-low);
+  margin-bottom:10px;
+}
+.nav-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.nav-item{
+  position:relative;
+  padding:12px 14px;
+  border-radius:8px;
+  font-size:14px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  cursor:pointer;
+  border:1px solid transparent;
+}
+.nav-item .t{font-family:'Cinzel', serif; font-weight:600; color:var(--text-hi); font-size:13.5px;}
+.nav-item .d{font-size:11.5px; color:var(--text-low);}
+.nav-item.active{
+  background:linear-gradient(90deg, rgba(255,79,212,0.14), rgba(138,79,224,0.08));
+  border-color:var(--hairline-strong);
+}
+.nav-item.active::before{
+  content:'';
+  position:absolute;
+  left:0; top:8px; bottom:8px;
+  width:2px;
+  background:var(--pink);
+  box-shadow:0 0 8px var(--pink);
+}
+.nav-item.locked{opacity:0.45; cursor:not-allowed;}
+.nav-item.locked .t::after{
+  content:'· pronto';
+  font-family:'Inter', sans-serif;
+  font-weight:400;
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--text-low);
+  margin-left:8px;
+}
+.panel{display:none; flex-direction:column; gap:26px;}
+.panel.visible{display:flex;}
+
+.toggle-group{display:flex; gap:6px;}
+.toggle-btn{
+  font-family:'JetBrains Mono', monospace;
+  font-size:13px;
+  font-weight:500;
+  padding:8px 14px;
+  border-radius:8px;
+  border:1px solid var(--hairline-strong);
+  background:var(--stone-2);
+  color:var(--text-mid);
+  cursor:pointer;
+}
+.toggle-btn.on{
+  background:linear-gradient(135deg, rgba(255,79,212,0.22), rgba(138,79,224,0.18));
+  color:var(--pink-bright);
+  border-color:var(--pink-dim);
+}
+
+.sidebar-foot{
+  margin-top:auto;
+  font-size:11px;
+  color:var(--text-low);
+  line-height:1.6;
+  padding-top:16px;
+  border-top:1px solid var(--hairline);
+}
+
+/* ---------- MAIN ---------- */
+.main{
+  flex:1;
+  padding:36px 44px 48px;
+  display:flex;
+  flex-direction:column;
+  gap:26px;
+  min-width:0;
+}
+
+.game-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:24px;
+  flex-wrap:wrap;
+}
+.game-head h1{
+  font-family:'Cinzel', serif;
+  font-weight:600;
+  font-size:26px;
+  margin:0 0 6px;
+  color:var(--text-hi);
+  letter-spacing:1px;
+}
+.game-head p{
+  margin:0;
+  font-size:13.5px;
+  color:var(--text-mid);
+  max-width:520px;
+  line-height:1.6;
+}
+
+.counter-pill{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--stone-2);
+  border:1px solid var(--hairline-strong);
+  border-radius:10px;
+  padding:10px 16px;
+}
+.counter-pill .num{
+  font-family:'JetBrains Mono', monospace;
+  font-size:20px;
+  font-weight:500;
+  color:var(--pink-bright);
+}
+.counter-pill .lbl{
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-low);
+}
+
+/* ---------- ARENA ---------- */
+.arena-wrap{
+  display:flex;
+  gap:36px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+
+.arena{
+  position:relative;
+  width:460px;
+  height:460px;
+  flex-shrink:0;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at center, rgba(122,42,107,0.14), transparent 70%);
+}
+
+.arena-floor{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:1px solid var(--hairline);
+}
+.arena-floor::before{
+  content:'';
+  position:absolute;
+  inset:60px;
+  border-radius:50%;
+  border:1px dashed rgba(198,163,230,0.14);
+}
+
+.core{
+  position:absolute;
+  top:50%; left:50%;
+  width:172px; height:172px;
+  transform:translate(-50%,-50%);
+  border-radius:16px;
+  background:linear-gradient(160deg, var(--stone-2), var(--void-deep));
+  border:1px solid var(--hairline-strong);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  overflow:hidden;
+}
+.core-ring{
+  position:absolute;
+  top:50%; left:50%;
+  width:196px; height:196px;
+  transform:translate(-50%,-50%);
+}
+.core-ring circle.track{stroke:rgba(198,163,230,0.12);}
+.core-ring circle.fill{
+  stroke:var(--pink);
+  filter:drop-shadow(0 0 6px var(--pink));
+  transition:stroke-dashoffset 0.35s ease;
+}
+.core .big{
+  font-family:'Cinzel', serif;
+  font-size:38px;
+  font-weight:600;
+  color:var(--text-hi);
+  line-height:1;
+}
+.core .of8{
+  font-size:11px;
+  letter-spacing:2px;
+  color:var(--text-low);
+  text-transform:uppercase;
+}
+.core .status{
+  font-size:10.5px;
+  color:var(--pink-bright);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  height:14px;
+  margin-top:4px;
+}
+
+.pillar{
+  position:absolute;
+  width:72px; height:96px;
+  transform:translate(-50%,-50%);
+  cursor:pointer;
+  background:none;
+  border:none;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.pillar:disabled{cursor:default;}
+.pillar svg{
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+.pillar .crystal{
+  fill:url(#crystalGradIdle);
+  stroke:rgba(198,163,230,0.25);
+  stroke-width:1;
+  transition:filter 0.2s ease;
+}
+.pillar:hover:not(:disabled) .crystal{
+  filter:drop-shadow(0 0 8px rgba(255,79,212,0.5));
+}
+.pillar.active .crystal{
+  fill:url(#crystalGradActive);
+  filter:drop-shadow(0 0 16px var(--pink)) drop-shadow(0 0 30px rgba(255,79,212,0.5));
+  animation:pulse 1.1s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{filter:drop-shadow(0 0 14px var(--pink)) drop-shadow(0 0 26px rgba(255,79,212,0.45));}
+  50%{filter:drop-shadow(0 0 20px var(--pink-bright)) drop-shadow(0 0 38px rgba(255,79,212,0.65));}
+}
+
+.badges{
+  position:absolute;
+  top:-4px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:3px;
+}
+.badge{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  font-weight:500;
+  color:var(--void-deep);
+  background:var(--pink-bright);
+  border-radius:5px;
+  min-width:17px;
+  height:17px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 3px;
+  box-shadow:0 0 6px rgba(255,79,212,0.7);
+}
+.pillar-idx{
+  position:absolute;
+  bottom:-2px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:10px;
+  color:var(--text-low);
+  letter-spacing:1px;
+}
+
+/* ---------- LOG PANEL ---------- */
+.log-panel{
+  flex:1;
+  min-width:220px;
+  background:var(--stone-1);
+  border:1px solid var(--hairline);
+  border-radius:12px;
+  padding:18px 18px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-height:460px;
+}
+.log-panel h3{
+  margin:0;
+  font-family:'Cinzel', serif;
+  font-size:13px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-mid);
+  font-weight:600;
+}
+.log-list{
+  list-style:none;
+  margin:0; padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  overflow-y:auto;
+}
+.log-list li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  padding:7px 10px;
+  border-radius:7px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--hairline);
+  animation:slideIn 0.2s ease;
+}
+@keyframes slideIn{from{opacity:0; transform:translateX(-6px);} to{opacity:1; transform:translateX(0);}}
+.log-list .step{
+  font-family:'JetBrains Mono', monospace;
+  color:var(--pink-bright);
+  font-weight:500;
+  min-width:16px;
+}
+.log-list .pos{color:var(--text-mid);}
+.log-empty{
+  font-size:12.5px;
+  color:var(--text-low);
+  font-style:italic;
+  padding:8px 2px;
+}
+
+/* ---------- MONSTER RING (game 2) ---------- */
+.arena-square{
+  position:relative;
+  width:520px;
+  height:520px;
+  flex-shrink:0;
+}
+.arena-square .frame{
+  position:absolute;
+  inset:70px;
+  border:1px solid var(--hairline);
+  border-radius:14px;
+  background:radial-gradient(circle at center, rgba(122,42,107,0.10), transparent 70%);
+}
+.arena-square .frame::before{
+  content:'';
+  position:absolute;
+  inset:22px;
+  border:1px dashed rgba(198,163,230,0.12);
+  border-radius:8px;
+}
+
+.mon-tile{
+  position:absolute;
+  width:78px; height:78px;
+  transform:translate(-50%,-50%);
+  border:1px solid var(--hairline-strong);
+  border-radius:10px;
+  background:var(--stone-2);
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:6px 4px 5px;
+  transition:background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.mon-tile:hover{border-color:rgba(198,163,230,0.4); transform:translate(-50%,-50%) scale(1.04);}
+.mon-tile svg{width:34px; height:34px;}
+.mon-tile .mname{
+  font-size:9px;
+  line-height:1.15;
+  text-align:center;
+  color:var(--text-low);
+  letter-spacing:0.2px;
+}
+.mon-tile .morder{
+  position:absolute;
+  top:-7px; right:-7px;
+  width:19px; height:19px;
+  border-radius:50%;
+  background:var(--pink-bright);
+  color:var(--void-deep);
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  font-weight:600;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 6px rgba(255,79,212,0.7);
+}
+.mon-tile.marked{
+  background:linear-gradient(160deg, rgba(255,79,212,0.16), var(--stone-2));
+  border-color:var(--pink-dim);
+}
+.mon-tile.marked .morder{display:flex;}
+.mon-tile.marked .mname{color:var(--text-mid);}
+.mon-tile.free{
+  background:linear-gradient(160deg, rgba(232,185,92,0.16), var(--stone-2));
+  border-color:rgba(232,185,92,0.55);
+  box-shadow:0 0 14px rgba(232,185,92,0.25);
+}
+.mon-tile.free::after{
+  content:'LIBRE';
+  position:absolute;
+  bottom:-9px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:8.5px;
+  letter-spacing:1.5px;
+  color:var(--gold);
+  background:var(--void-deep);
+  padding:1px 5px;
+  border-radius:4px;
+  border:1px solid rgba(232,185,92,0.4);
+}
+
+.core2{
+  position:absolute;
+  top:50%; left:50%;
+  width:150px; height:150px;
+  transform:translate(-50%,-50%);
+  border-radius:14px;
+  background:linear-gradient(160deg, var(--stone-2), var(--void-deep));
+  border:1px solid var(--hairline-strong);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+.core2 .big{font-family:'Cinzel', serif; font-size:32px; font-weight:600;}
+.core2 .of{font-size:10.5px; letter-spacing:2px; color:var(--text-low); text-transform:uppercase;}
+.core2 .status{font-size:10px; color:var(--gold); letter-spacing:1px; text-transform:uppercase; height:13px; margin-top:2px;}
+
+.free-summary{
+  font-size:12.5px;
+  color:var(--text-mid);
+  line-height:1.7;
+}
+.free-summary b{color:var(--gold);}
+
+@media (max-width:1080px){
+  .arena-square{width:100%; max-width:520px; height:auto; aspect-ratio:1/1;}
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:auto;
+  padding-top:12px;
+  border-top:1px solid var(--hairline);
+}
+.btn{
+  flex:1;
+  font-family:'Inter', sans-serif;
+  font-size:12.5px;
+  font-weight:500;
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid var(--hairline-strong);
+  background:var(--stone-2);
+  color:var(--text-hi);
+  cursor:pointer;
+  transition:background 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover{background:var(--stone-3); border-color:rgba(198,163,230,0.35);}
+.btn.danger{color:var(--danger); border-color:rgba(255,62,94,0.3);}
+.btn.danger:hover{background:rgba(255,62,94,0.08);}
+.btn:disabled{opacity:0.35; cursor:not-allowed;}
+
+@media (max-width:920px){
+  .app{flex-direction:column;}
+  .sidebar{width:100%; flex-direction:row; align-items:center; overflow-x:auto; padding:16px 20px;}
+  .brand{border-bottom:none; padding-bottom:0; border-right:1px solid var(--hairline); padding-right:16px;}
+  .nav-list{flex-direction:row;}
+  .sidebar-foot{display:none;}
+  .main{padding:24px 20px 36px;}
+  .arena{width:100%; max-width:420px; height:auto; aspect-ratio:1/1;}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="mark">SANCTUM</span>
+      <span class="sub">Minijuegos · Medivia</span>
+    </div>
+
+    <div>
+      <div class="nav-label">Sala del jefe</div>
+      <div class="nav-list">
+        <div class="nav-item active" data-target="pillars">
+          <span class="t">Obscure</span>
+          <span class="d">Secuencia de pilares</span>
+        </div>
+        <div class="nav-item" data-target="swarm">
+          <span class="t">Invocación</span>
+          <span class="d">Monstruos aparecidos</span>
+        </div>
+        <div class="nav-item locked">
+          <span class="t">Grieta carmesí</span>
+          <span class="d">Zonas seguras</span>
+        </div>
+        <div class="nav-item locked">
+          <span class="t">Susurro ancestral</span>
+          <span class="d">Orden de runas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-foot" id="sidebarFoot">
+      Registra el orden en que se iluminan los pilares durante el combate para memorizar y anticipar la secuencia.
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <div class="panel visible" id="panel-pillars">
+
+      <div class="game-head">
+        <div>
+          <h1>Obscure — Secuencia de pilares</h1>
+          <p>Pulsa cada pilar en el orden en que se ilumina. Un mismo pilar puede repetirse. La secuencia se completa a los 8 clics.</p>
+        </div>
+        <div class="counter-pill">
+          <span class="num" id="counterNum">0</span>
+          <span class="lbl">/ 8 clics</span>
+        </div>
+      </div>
+
+      <div class="arena-wrap">
+
+        <div class="arena" id="arena">
+          <div class="arena-floor"></div>
+
+          <svg class="core-ring" viewBox="0 0 196 196">
+            <circle class="track" cx="98" cy="98" r="90" fill="none" stroke-width="2"></circle>
+            <circle class="fill" id="ringFill" cx="98" cy="98" r="90" fill="none" stroke-width="2"
+              stroke-linecap="round" stroke-dasharray="565.5" stroke-dashoffset="565.5"
+              transform="rotate(-90 98 98)"></circle>
+          </svg>
+
+          <div class="core">
+            <span class="big" id="coreBig">0</span>
+            <span class="of8">de 8 pilares</span>
+            <span class="status" id="coreStatus"></span>
+          </div>
+
+          <svg width="0" height="0" style="position:absolute">
+            <defs>
+              <linearGradient id="crystalGradIdle" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#5a3f74"></stop>
+                <stop offset="100%" stop-color="#241830"></stop>
+              </linearGradient>
+              <linearGradient id="crystalGradActive" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffd6f7"></stop>
+                <stop offset="55%" stop-color="#ff4fd4"></stop>
+                <stop offset="100%" stop-color="#9a2a86"></stop>
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- pillars injected by JS -->
+        </div>
+
+        <div class="log-panel">
+          <h3>Registro de la secuencia</h3>
+          <ul class="log-list" id="logList">
+            <li class="log-empty" id="logEmpty">Aún no hay clics registrados.</li>
+          </ul>
+          <div class="actions">
+            <button class="btn" id="undoBtn">Deshacer</button>
+            <button class="btn danger" id="resetBtn">Reiniciar</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel" id="panel-swarm">
+
+      <div class="game-head">
+        <div>
+          <h1>Invocación — Monstruos aparecidos</h1>
+          <p>Marca cada monstruo según vaya apareciendo en el centro (una sola vez, no se repiten). Al llegar al total de la ronda, los que queden sin marcar son los libres.</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div class="toggle-group">
+            <button class="toggle-btn on" data-total="8">8</button>
+            <button class="toggle-btn" data-total="9">9</button>
+          </div>
+          <div class="counter-pill">
+            <span class="num" id="swarmCounterNum">0</span>
+            <span class="lbl" id="swarmCounterLbl">/ 8 monstruos</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arena-wrap">
+
+        <div class="arena-square" id="arenaSquare">
+          <div class="frame"></div>
+          <div class="core2">
+            <span class="big" id="swarmBig">0</span>
+            <span class="of" id="swarmOf">de 8</span>
+            <span class="status" id="swarmStatus"></span>
+          </div>
+          <!-- monster tiles injected by JS -->
+        </div>
+
+        <div class="log-panel">
+          <h3>Registro de aparición</h3>
+          <ul class="log-list" id="swarmLogList">
+            <li class="log-empty" id="swarmLogEmpty">Aún no hay monstruos marcados.</li>
+          </ul>
+          <div class="free-summary" id="freeSummary"></div>
+          <div class="actions">
+            <button class="btn danger" id="swarmResetBtn">Reiniciar</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+<script>
+(function(){
+  const TOTAL_PILLARS = 8;
+  const MAX_CLICKS = 8;
+  const arena = document.getElementById('arena');
+  const logList = document.getElementById('logList');
+  const logEmpty = document.getElementById('logEmpty');
+  const counterNum = document.getElementById('counterNum');
+  const coreBig = document.getElementById('coreBig');
+  const coreStatus = document.getElementById('coreStatus');
+  const ringFill = document.getElementById('ringFill');
+  const undoBtn = document.getElementById('undoBtn');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const RADIUS = 190;
+  const CENTER = 230;
+
+  let sequence = [];
+  let pillarButtons = [];
+  let pillarBadgeCounts = [];
+
+  function buildPillars(){
+    for(let i=0;i<TOTAL_PILLARS;i++){
+      const angle = (i * 45 - 90) * Math.PI / 180;
+      const x = CENTER + RADIUS * Math.cos(angle);
+      const y = CENTER + RADIUS * Math.sin(angle);
+
+      const btn = document.createElement('button');
+      btn.className = 'pillar';
+      btn.style.left = x + 'px';
+      btn.style.top = y + 'px';
+      btn.setAttribute('aria-label', 'Pilar ' + (i+1));
+      btn.dataset.index = i;
+
+      btn.innerHTML =
+        '<svg viewBox="0 0 72 96">' +
+          '<polygon class="crystal" points="36,4 54,34 46,92 26,92 18,34"></polygon>' +
+        '</svg>' +
+        '<div class="badges" data-badges></div>' +
+        '<div class="pillar-idx">' + (i+1) + '</div>';
+
+      btn.addEventListener('click', function(){ onPillarClick(i); });
+      arena.appendChild(btn);
+      pillarButtons.push(btn);
+      pillarBadgeCounts.push([]);
+    }
+  }
+
+  function onPillarClick(i){
+    if(sequence.length >= MAX_CLICKS) return;
+    sequence.push(i);
+    pillarBadgeCounts[i].push(sequence.length);
+    render();
+  }
+
+  function undo(){
+    if(sequence.length === 0) return;
+    const last = sequence.pop();
+    pillarBadgeCounts[last].pop();
+    render();
+  }
+
+  function reset(){
+    sequence = [];
+    pillarBadgeCounts = pillarBadgeCounts.map(()=>[]);
+    render();
+  }
+
+  function render(){
+    const n = sequence.length;
+    counterNum.textContent = n;
+    coreBig.textContent = n;
+
+    const circumference = 2 * Math.PI * 90;
+    const offset = circumference * (1 - n / MAX_CLICKS);
+    ringFill.setAttribute('stroke-dasharray', circumference.toFixed(1));
+    ringFill.setAttribute('stroke-dashoffset', offset.toFixed(1));
+
+    coreStatus.textContent = n === MAX_CLICKS ? 'Secuencia completa' : '';
+
+    pillarButtons.forEach(function(btn, i){
+      const badges = btn.querySelector('[data-badges]');
+      badges.innerHTML = '';
+      pillarBadgeCounts[i].forEach(function(num){
+        const b = document.createElement('span');
+        b.className = 'badge';
+        b.textContent = num;
+        badges.appendChild(b);
+      });
+      btn.classList.toggle('active', pillarBadgeCounts[i].length > 0);
+      btn.disabled = n >= MAX_CLICKS;
+    });
+
+    logList.innerHTML = '';
+    if(sequence.length === 0){
+      logList.appendChild(logEmpty);
+    } else {
+      sequence.forEach(function(pillarIndex, order){
+        const li = document.createElement('li');
+        li.innerHTML = '<span class="step">' + (order+1) + '</span>' +
+          '<span class="pos">Pilar ' + (pillarIndex+1) + '</span>';
+        logList.appendChild(li);
+      });
+      logList.scrollTop = logList.scrollHeight;
+    }
+
+    undoBtn.disabled = sequence.length === 0;
+    resetBtn.disabled = sequence.length === 0;
+  }
+
+  undoBtn.addEventListener('click', undo);
+  resetBtn.addEventListener('click', reset);
+
+  buildPillars();
+  render();
+})();
+
+/* ---------- NAV SWITCHING ---------- */
+(function(){
+  const navItems = document.querySelectorAll('.nav-item[data-target]');
+  const foot = document.getElementById('sidebarFoot');
+  const footText = {
+    pillars: 'Registra el orden en que se iluminan los pilares durante el combate para memorizar y anticipar la secuencia.',
+    swarm: 'Marca cada monstruo cuando salga en el centro de la sala. Al completar la ronda (8 o 9), los que no marcaste son los libres.'
+  };
+  navItems.forEach(function(item){
+    item.addEventListener('click', function(){
+      navItems.forEach(function(n){ n.classList.remove('active'); });
+      item.classList.add('active');
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('visible'); });
+      document.getElementById('panel-' + item.dataset.target).classList.add('visible');
+      foot.textContent = footText[item.dataset.target] || foot.textContent;
+    });
+  });
+})();
+
+/* ---------- MONSTER RING GAME ---------- */
+(function(){
+  const arena = document.getElementById('arenaSquare');
+  const logList = document.getElementById('swarmLogList');
+  const logEmpty = document.getElementById('swarmLogEmpty');
+  const counterNum = document.getElementById('swarmCounterNum');
+  const counterLbl = document.getElementById('swarmCounterLbl');
+  const bigNum = document.getElementById('swarmBig');
+  const ofLbl = document.getElementById('swarmOf');
+  const statusLbl = document.getElementById('swarmStatus');
+  const freeSummary = document.getElementById('freeSummary');
+  const resetBtn = document.getElementById('swarmResetBtn');
+  const totalBtns = document.querySelectorAll('.toggle-btn[data-total]');
+
+  const MONSTERS = [
+    { name:'Gusano abisal',      color:'#8a4fe0', family:'worm' },
+    { name:'Fauces errantes',    color:'#8a4fe0', family:'worm' },
+    { name:'Colmillo espiral',   color:'#8a4fe0', family:'worm' },
+    { name:'Sombra veloz',       color:'#5b4f78', family:'rogue' },
+    { name:'Espectro azul I',    color:'#4f8fe0', family:'specter' },
+    { name:'Espectro azul II',   color:'#4f8fe0', family:'specter' },
+    { name:'Bestia de la grieta',color:'#5f5a78', family:'beast' },
+    { name:'Demonio cornudo',    color:'#7a5fd0', family:'demon' },
+    { name:'Zarcillo rosado',    color:'#ff6fc4', family:'tentacle' },
+    { name:'Cuerno carmesí',     color:'#e0524f', family:'demon' },
+    { name:'Tentáculo carmesí',  color:'#e0524f', family:'tentacle' },
+    { name:'Ojo del vacío',      color:'#cc3b3b', family:'eye' }
+  ];
+
+  const RADIUS = 210;
+  const CENTER = 260;
+
+  let total = 8;
+  let marked = new Array(MONSTERS.length).fill(false);
+  let order = [];
+  let tiles = [];
+
+  function iconSVG(family, color){
+    const base = '<svg viewBox="0 0 64 64">';
+    const bodyFill = 'fill="' + color + '" fill-opacity="0.85"';
+    let inner = '';
+    switch(family){
+      case 'worm':
+        inner = '<ellipse cx="32" cy="36" rx="18" ry="14" ' + bodyFill + '/>' +
+          '<ellipse cx="32" cy="20" rx="10" ry="9" ' + bodyFill + '/>' +
+          '<circle cx="28" cy="18" r="1.6" fill="#0a0713"/><circle cx="36" cy="18" r="1.6" fill="#0a0713"/>';
+        break;
+      case 'rogue':
+        inner = '<path d="M32 8 L48 30 L40 56 L24 56 L16 30 Z" ' + bodyFill + '/>' +
+          '<circle cx="32" cy="26" r="3" fill="#ff3e5e"/>';
+        break;
+      case 'specter':
+        inner = '<path d="M32 8 C46 8 50 22 46 34 C50 40 46 50 40 50 L24 50 C18 50 14 40 18 34 C14 22 18 8 32 8 Z" ' + bodyFill + '/>' +
+          '<circle cx="26" cy="26" r="2.2" fill="#dff3ff"/><circle cx="38" cy="26" r="2.2" fill="#dff3ff"/>';
+        break;
+      case 'beast':
+        inner = '<circle cx="32" cy="34" r="18" ' + bodyFill + '/>' +
+          '<path d="M14 26 L20 12 L26 24" fill="' + color + '"/>' +
+          '<path d="M50 26 L44 12 L38 24" fill="' + color + '"/>' +
+          '<circle cx="26" cy="32" r="2" fill="#ff3e5e"/><circle cx="38" cy="32" r="2" fill="#ff3e5e"/>';
+        break;
+      case 'demon':
+        inner = '<circle cx="32" cy="36" r="16" ' + bodyFill + '/>' +
+          '<path d="M20 24 C16 12 8 10 6 8 C10 18 14 24 18 28 Z" fill="' + color + '"/>' +
+          '<path d="M44 24 C48 12 56 10 58 8 C54 18 50 24 46 28 Z" fill="' + color + '"/>' +
+          '<circle cx="27" cy="34" r="2" fill="#ffd76b"/><circle cx="37" cy="34" r="2" fill="#ffd76b"/>';
+        break;
+      case 'tentacle':
+        inner = '<circle cx="32" cy="24" r="12" ' + bodyFill + '/>' +
+          '<path d="M22 32 C14 40 14 50 20 56" stroke="' + color + '" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+          '<path d="M32 34 C30 44 32 52 30 58" stroke="' + color + '" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+          '<path d="M42 32 C50 40 50 50 44 56" stroke="' + color + '" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+          '<circle cx="27" cy="22" r="1.8" fill="#0a0713"/><circle cx="37" cy="22" r="1.8" fill="#0a0713"/>';
+        break;
+      case 'eye':
+        inner = '<circle cx="32" cy="32" r="20" fill="#1a1220"/>' +
+          '<circle cx="32" cy="32" r="20" fill="none" stroke="' + color + '" stroke-width="2"/>' +
+          '<circle cx="32" cy="32" r="10" ' + bodyFill + '/>' +
+          '<circle cx="32" cy="32" r="4" fill="#0a0713"/>';
+        break;
+      default:
+        inner = '<circle cx="32" cy="32" r="18" ' + bodyFill + '/>';
+    }
+    return base + inner + '</svg>';
+  }
+
+  function buildTiles(){
+    MONSTERS.forEach(function(m, i){
+      const angle = (i * (360 / MONSTERS.length) - 90) * Math.PI / 180;
+      const x = CENTER + RADIUS * Math.cos(angle);
+      const y = CENTER + RADIUS * Math.sin(angle);
+
+      const tile = document.createElement('button');
+      tile.className = 'mon-tile';
+      tile.style.left = x + 'px';
+      tile.style.top = y + 'px';
+      tile.innerHTML =
+        '<span class="morder"></span>' +
+        iconSVG(m.family, m.color) +
+        '<span class="mname">' + m.name + '</span>';
+
+      tile.addEventListener('click', function(){ onTileClick(i); });
+      arena.appendChild(tile);
+      tiles.push(tile);
+    });
+  }
+
+  function onTileClick(i){
+    if(marked[i]){
+      marked[i] = false;
+      order = order.filter(function(idx){ return idx !== i; });
+    } else {
+      if(order.length >= total) return;
+      marked[i] = true;
+      order.push(i);
+    }
+    render();
+  }
+
+  function reset(){
+    marked = marked.map(function(){ return false; });
+    order = [];
+    render();
+  }
+
+  function setTotal(t){
+    total = t;
+    totalBtns.forEach(function(b){ b.classList.toggle('on', parseInt(b.dataset.total,10) === t); });
+    render();
+  }
+
+  function render(){
+    const n = order.length;
+    counterNum.textContent = n;
+    counterLbl.textContent = '/ ' + total + ' monstruos';
+    bigNum.textContent = n;
+    ofLbl.textContent = 'de ' + total;
+
+    const complete = n === total;
+    statusLbl.textContent = complete ? 'Ronda completa' : '';
+
+    tiles.forEach(function(tile, i){
+      tile.classList.toggle('marked', marked[i]);
+      const badge = tile.querySelector('.morder');
+      badge.textContent = marked[i] ? (order.indexOf(i) + 1) : '';
+      tile.classList.toggle('free', complete && !marked[i]);
+    });
+
+    logList.innerHTML = '';
+    if(order.length === 0){
+      logList.appendChild(logEmpty);
+    } else {
+      order.forEach(function(idx, pos){
+        const li = document.createElement('li');
+        li.innerHTML = '<span class="step">' + (pos+1) + '</span>' +
+          '<span class="pos">' + MONSTERS[idx].name + '</span>';
+        logList.appendChild(li);
+      });
+      logList.scrollTop = logList.scrollHeight;
+    }
+
+    if(complete){
+      const freeNames = MONSTERS.filter(function(_,i){ return !marked[i]; }).map(function(m){ return m.name; });
+      freeSummary.innerHTML = '<b>Libres (' + freeNames.length + '):</b> ' + freeNames.join(', ');
+    } else {
+      freeSummary.innerHTML = '';
+    }
+  }
+
+  totalBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){ setTotal(parseInt(btn.dataset.total,10)); });
+  });
+  resetBtn.addEventListener('click', reset);
+
+  buildTiles();
+  render();
+})();
+</script>
+
+</body>
+</html>
